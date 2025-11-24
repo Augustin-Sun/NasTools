@@ -83,7 +83,6 @@ docker run -d \
 
 
 # 2. 部署 NASTOOLS
-MIRROR_URL="https://1ms.run/
 echo "正在拉取 NASTOOLS 镜像..."
 docker pull syly948/nastools || { echo "错误: 无法拉取 NASTOOLS 镜像，请检查网络。"; exit 1; }
 echo "正在部署 NASTOOLS 容器..."
