@@ -65,8 +65,9 @@ done
 
 # --- 移除旧容器，以防冲突 ---
 echo "检查并移除旧容器..."
-docker rm -f jackett qbittorrent nastools &>/dev/null
 
+docker rm -f jackett qbittorrent nastools &>/dev/null
+MIRROR_URL="https://1ms.run/"
 # 1. 部署 Jackett
 echo "正在拉取 Jackett 镜像..."
 docker pull linuxserver/jackett:latest || { echo "错误: 无法拉取 Jackett 镜像，请检查网络。"; exit 1; }
