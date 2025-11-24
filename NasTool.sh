@@ -2,11 +2,9 @@
 
 # 脚本名称：NAS-Tools 一键部署脚本（映射统一版）
 # 作者：Eric
-# YouTube频道：https://www.youtube.com/@Eric-f2v
 
 # --- 定义默认变量 ---
 DEFAULT_JACKETT_PORT=9117
-DEFAULT_QBITTORRENT_WEBUI_PORT=8080
 DEFAULT_NASTOOLS_PORT=3000
 
 echo "========================================="
@@ -23,9 +21,6 @@ MEDIA_BASE_DIR="$DEPLOY_DIR/media"
 # 1. 输入端口映射
 read -p "请输入 Jackett 的宿主机端口 [默认: $DEFAULT_JACKETT_PORT]: " JACKETT_PORT
 JACKETT_PORT=${JACKETT_PORT:-$DEFAULT_JACKETT_PORT}
-
-read -p "请输入 Qbittorrent 的 Web UI 宿主机端口 [默认: $DEFAULT_QBITTORRENT_WEBUI_PORT]: " QBITTORRENT_WEBUI_PORT
-QBITTORRENT_WEBUI_PORT=${QBITTORRENT_WEBUI_PORT:-$DEFAULT_QBITTORRENT_WEBUI_PORT}
 
 read -p "请输入 NASTOOLS 的宿主机端口 [默认: $DEFAULT_NASTOOLS_PORT]: " NASTOOLS_PORT
 NASTOOLS_PORT=${NASTOOLS_PORT:-$DEFAULT_NASTOOLS_PORT}
@@ -86,27 +81,10 @@ docker run -d \
   -v $JACKETT_CONFIG_DIR:/config \
   linuxserver/jackett:latest
 
-# 2. 部署 Qbittorrent
-echo "正在拉取 Qbittorrent 镜像..."
-docker pull linuxserver/qbittorrent:latest || { echo "错误: 无法拉取 Qbittorrent 镜像，请检查网络。"; exit 1; }
-echo "正在部署 Qbittorrent 容器..."
-docker run -d \
-  --name=qbittorrent \
-  --restart=always \
-  -p $QBITTORRENT_WEBUI_PORT:8080 \
-  -p 6881:6881 \
-  -p 6881:6881/udp \
-  -e PUID=$PUID \
-  -e PGID=$PGID \
-  -e TZ=Asia/Shanghai \
-  -e WEBUI_PORT=8080 \
-  -v $QBITTORRENT_CONFIG_DIR:/config \
-  -v $MEDIA_BASE_DIR:/media \
-  linuxserver/qbittorrent:latest
 
 # 3. 部署 NASTOOLS
 echo "正在拉取 NASTOOLS 镜像..."
-docker pull hsuyelin/nas-tools || { echo "错误: 无法拉取 NASTOOLS 镜像，请检查网络。"; exit 1; }
+docker pull syly948/nastools || { echo "错误: 无法拉取 NASTOOLS 镜像，请检查网络。"; exit 1; }
 echo "正在部署 NASTOOLS 容器..."
 docker run -d \
   --name=nastools \
@@ -119,18 +97,16 @@ docker run -d \
   -e RUN_MODE=release \
   -v $NASTOOLS_CONFIG_DIR:/config \
   -v $MEDIA_BASE_DIR:/media \
-  hsuyelin/nas-tools
+  syly948/nastools
 
 if [ $? -eq 0 ]; then
     echo -e "\n========================================="
     echo "所有服务部署成功！"
     echo "你可以通过以下地址访问它们："
     echo "Jackett:      http://你的NAS_IP:$JACKETT_PORT"
-    echo "Qbittorrent:  http://你的NAS_IP:$QBITTORRENT_WEBUI_PORT"
     echo "NASTOOLS:     http://你的NAS_IP:$NASTOOLS_PORT"
     echo "========================================="
-    echo -e "\n注意：请在 NASTOOLS 和 Qbittorrent 的后台配置中，将所有相关路径设置为：/media。"
-    echo "例如，Qbittorrent 的下载路径、NASTOOLS 的电影/电视节目/链接路径都应以 /media 开头。"
+
     echo "========================================="
 else
     echo -e "\n错误：Docker 容器启动失败。"
